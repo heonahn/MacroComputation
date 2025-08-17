@@ -18,7 +18,7 @@ function compparam(; maxiter=1000, itertol=1e-8, opttol=1e-8)
 end
 
 function modelparam(; A = 1, beta = 0.8, alpha = 0.5, xgrid=range(1e-8, 0.4, length=1000), useV=false)
-    if useV
+    if useV                                                                 # Load initial value function from file if it exists
         savevars = FileIO.load("cakeeating/cakeeating.jld2", "savevars")
         V0vec = savevars.V0vec
     else
@@ -145,4 +145,7 @@ function plotVFI(modelparam, compparam; saveplot=true)
     end
 end
 
-plotVFI(modelparam(; useV=true), compparam())
+
+# Run the Value Function Iteration and plot the results
+
+plotVFI(modelparam(; useV=false), compparam())
