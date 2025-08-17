@@ -19,7 +19,7 @@ end
 
 function modelparam(; A = 1, beta = 0.8, alpha = 0.5, xgrid=range(1e-8, 0.4, length=1000), useV=false)
     if useV
-        savevars = FileIO.load("cakeeating.jld2", "savevars")
+        savevars = FileIO.load("cakeeating/cakeeating.jld2", "savevars")
         V0vec = savevars.V0vec
     else
         V0vec = zeros(length(xgrid))
@@ -82,7 +82,7 @@ function VFI(modelparam, compparam)
 
     # Save the results to a file
     savevars = (; V0vec, kpvec)
-    FileIO.save("cakeeating.jld2", "savevars", savevars)
+    FileIO.save("cakeeating/cakeeating.jld2", "savevars", savevars)
 
     return Vvec, kpvec, xgrid
 end
@@ -123,7 +123,7 @@ function HowardVFI(modelparam, compparam)
 
     # Save the results to a file
     savevars = (; V0vec, kpvec)
-    FileIO.save("cakeeating.jld2", "savevars", savevars)
+    FileIO.save("cakeeating/cakeeating.jld2", "savevars", savevars)
 
     return Vvec, kpvec, xgrid
 end
@@ -141,7 +141,7 @@ function plotVFI(modelparam, compparam; saveplot=true)
     vfifig = plot(p1, p2, layout=(2, 1), size=(1000, 800), legend=:bottomright)
 
     if saveplot
-        savefig(vfifig, "cakeeating_vfi.pdf")
+        savefig(vfifig, "cakeeating/cakeeating_vfi.pdf")
     end
 end
 
