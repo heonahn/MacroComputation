@@ -1,10 +1,13 @@
 # Add Pkgs
 # import Pkg; Pkg.add("Optim")
 # import Pkg; Pkg.add("BenchmarkTools")
+# import Pkg; Pkg.add("FileIO")
+# import Pkg; Pkg.add("JLD2")
 
 # Load necessary packages
 using Interpolations, LinearAlgebra, Optim
 using Plots
+using FileIO, JLD2
 using BenchmarkTools
 
 # Define the model parameters and computation parameters
@@ -16,7 +19,8 @@ end
 
 function modelparam(; A = 1, beta = 0.8, alpha = 0.5, xgrid=range(1e-8, 0.4, length=1000), useV=false)
     if useV
-        V0vec = Vsaved
+        savevars = FileIO.load("cakeeating.jld2", "savevars")
+        V0vec = savevars.V0vec
     else
         V0vec = zeros(length(xgrid))
     end
@@ -47,6 +51,7 @@ function Bellman(modelparam, compparam; itp)
         Vvec[j] = -Optim.minimum(res)
     end
 
+
     return (; V0vec, kpvec, Vvec, itp)
 
 end
@@ -74,6 +79,10 @@ function VFI(modelparam, compparam)
         end
         
     end
+
+    # Save the results to a file
+    savevars = (; V0vec, kpvec)
+    FileIO.save("cakeeating.jld2", "savevars", savevars)
 
     return Vvec, kpvec, xgrid
 end
@@ -112,20 +121,28 @@ function HowardVFI(modelparam, compparam)
         
     end
 
+    # Save the results to a file
+    savevars = (; V0vec, kpvec)
+    FileIO.save("cakeeating.jld2", "savevars", savevars)
+
     return Vvec, kpvec, xgrid
 end
 
 
 # Function to plot the results of Value Function Iteration
 
-function plotVFI(modelparam, compparam)
+function plotVFI(modelparam, compparam; saveplot=true)
     # Vvec, kpvec, xgrid = VFI(modelparam, compparam)             # Perform VFI
     Vvec, kpvec, xgrid = HowardVFI(modelparam, compparam)       # Perform Howard's VFI
     
     p1 = plot(xgrid[100:600], Vvec[100:600], label="Value Function (V)", xlabel="Capital (k)", ylabel="Value (V)", linestyle=:dash, linewidth=2, title="Value Function Iteration")
     p2 = plot(xgrid[100:600], kpvec[100:600], label="Optimal Policy (k')", xlabel="Capital (k)", ylabel="Saving (K')", linestyle=:dash, linewidth=2)
 
-    plot(p1, p2, layout=(2, 1), size=(1000, 800), legend=:bottomright)
+    vfifig = plot(p1, p2, layout=(2, 1), size=(1000, 800), legend=:bottomright)
+
+    if saveplot
+        savefig(vfifig, "cakeeating_vfi.pdf")
+    end
 end
 
-plotVFI(modelparam(), compparam())
+plotVFI(modelparam(; useV=true), compparam())
